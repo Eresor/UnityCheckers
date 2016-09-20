@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CheckerData.cs" />
     <Compile Include="Assets\Scripts\FieldData.cs" />
+    <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\GameModel.cs" />
     <Compile Include="Assets\Scripts\GameView.cs" />
     <Compile Include="Assets\Scripts\HumanPlayer.cs" />

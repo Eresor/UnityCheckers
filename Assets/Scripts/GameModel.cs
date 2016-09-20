@@ -78,6 +78,57 @@ public class GameModel : MonoBehaviour {
         board[position.x, position.y] = data;
     }
 
+    public static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
+    {
+        List<Move> ret = new List<Move>();
+        bool foundCaptureMove = false;
+        int maxCombo = 0;
+        for (int y=0;y<size;y++)
+        {
+            for(int x=0;x<size;x++)
+            {
+                CheckerData curr;
+                if( ( curr = board[x,y] ) != null)
+                {
+                    Vec2 currPos = new Vec2(x, y);
+                    List<Vec2> captured = GetCaptureList(currPos, board, size);
+                    if (captured.Count == 0 && foundCaptureMove==false)
+                    {
+                        List<Vec2> nonKillingMoves = GetNonKillingMovesForField(currPos, board, size);
+                        foreach(Vec2 target in nonKillingMoves)
+                        {
+                            ret.Add(new Move(currPos, target));
+                        }
+                    }
+                    else
+                    {
+                        foundCaptureMove = true;
+                        List<Vec2> possibleTargets = new List<Vec2>();
+                        foreach (Vec2 target in captured)
+                        {
+                            Move move = new Move(currPos, target);
+                            CheckerData[,] clone = board.Clone() as CheckerData[,];
+                            MoveSimulation(currPos, target, clone);
+                            int currCombo = SimulateCombo(target, clone, size, 0, move);
+                            if(currCombo > maxCombo)
+                            {
+                                ret.Clear();
+                                maxCombo = currCombo;
+                                ret.Add(move);
+                            }
+                            else if(currCombo==maxCombo)
+                            {
+                                ret.Add(move);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ret;
+    }
+
     static int SimulateCombo(Vec2 position, CheckerData[,] board, int size, int counter, Move move)
     {
         int insideCounter = 1;
