@@ -3,6 +3,17 @@ using System.Collections;
 
 public class GameView : MonoBehaviour {
 
+    public static GameView GetInstance()
+    {
+        if (instance == null)
+        {
+            instance = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GameView>();
+        }
+        return instance;
+    }
+
+    private static GameView instance;
+
     public GameObject FieldPrefab;
 
     public GameObject CheckerPrefab;
@@ -45,6 +56,18 @@ public class GameView : MonoBehaviour {
 	
 	}
 	
+    public void HighlightChecker(CheckerData toHighlight, CheckerData previouslyHighlited=null)
+    {
+        if(previouslyHighlited)
+        {
+            previouslyHighlited.gameObject.GetComponent<SpriteRenderer>().color = (previouslyHighlited.Owner == GameController.GetInstance().Players[0] ? Color.white : Color.black);
+        }
+        if(toHighlight)
+        {
+            toHighlight.gameObject.GetComponent<SpriteRenderer>().color = Color.blue;
+        }
+    }
+
 	// Update is called once per frame
 	void Update () {
 	

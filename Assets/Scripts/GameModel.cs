@@ -17,6 +17,15 @@ public class Vec2
     public int x;
 
     public int y;
+
+    public override bool Equals(object obj)
+    {
+        if(obj.GetType()==typeof(Vec2))
+        {
+            return (obj as Vec2).x == this.x && (obj as Vec2).y == this.y;
+        }
+        return false;
+    }
 }
 
 public class Move
@@ -31,6 +40,16 @@ public class Move
     {
         From = from;
         To = to;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if(obj.GetType()==typeof(Move))
+        {
+            Move other = obj as Move;
+            return other.From == this.From && other.To == this.To;
+        }
+        return false;
     }
 }
 
@@ -61,6 +80,25 @@ public class GameModel : MonoBehaviour {
         }
     }
 
+    private List<Move> PossibleMoves;
+
+    public void UpdatePossibleMoves()
+    {
+        PossibleMoves = GetPossibleMoves(board, BoardSize, GameController.GetInstance().CurrentPlayer);
+    }
+
+    public bool IsMoveValid(Move selectedMove)
+    {
+        foreach(Move move in PossibleMoves)
+        {
+            if(selectedMove.Equals(move))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	// Use this for initialization
 	void Start () {
 
@@ -73,12 +111,27 @@ public class GameModel : MonoBehaviour {
 	
 	}
 
+    public Vec2 GetCheckerFiled(CheckerData cheker)
+    {
+        for(int y=0;y<BoardSize;y++)
+        {
+            for(int x=0;x<BoardSize;x++)
+            {
+                if(cheker==board[x,y])
+                {
+                    return new Vec2(x, y);
+                }
+            }
+        }
+        throw new System.Exception("Invalid checker not on board");
+    }
+
     public void RegiesterCheckerData(CheckerData data, Vec2 position)
     {
         board[position.x, position.y] = data;
     }
 
-    public static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
+    private static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
     {
         List<Move> ret = new List<Move>();
         bool foundCaptureMove = false;
@@ -88,7 +141,7 @@ public class GameModel : MonoBehaviour {
             for(int x=0;x<size;x++)
             {
                 CheckerData curr;
-                if( ( curr = board[x,y] ) != null)
+                if( ( curr = board[x,y] ) != null && curr.Owner == player)
                 {
                     Vec2 currPos = new Vec2(x, y);
                     List<Vec2> captured = GetCaptureList(currPos, board, size);
