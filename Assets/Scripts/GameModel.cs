@@ -189,7 +189,7 @@ public class GameModel : MonoBehaviour {
         if (captured.Count == 0)
         {
             move.Children = null;
-            return 1;
+            return counter;
         }
         else
         {
