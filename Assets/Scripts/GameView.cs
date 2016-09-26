@@ -72,4 +72,15 @@ public class GameView : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    public void DestroyChecker(CheckerData checker)
+    {
+        Destroy(checker);
+    }
+
+    public void MoveChecker(CheckerData checker, Vec2 target)
+    {
+        checker.gameObject.transform.position = GetFieldPosition(target.x, target.y, true);
+    }
+
 }

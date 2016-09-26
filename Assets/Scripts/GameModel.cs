@@ -47,7 +47,7 @@ public class Move
         if(obj.GetType()==typeof(Move))
         {
             Move other = obj as Move;
-            return other.From == this.From && other.To == this.To;
+            return other.From.Equals(this.From) && other.To.Equals(this.To);
         }
         return false;
     }
@@ -270,7 +270,7 @@ public class GameModel : MonoBehaviour {
         return ret;
     }
 
-    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board)
+    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData,Vec2> moveAction=null, System.Action<CheckerData> destroyAction = null)
     {
         Vec2 step = new Vec2(from.x - to.x, from.y - to.y);
         if(Mathf.Abs(step.y)>1)
@@ -283,6 +283,12 @@ public class GameModel : MonoBehaviour {
                     board[from.x + (step.x) / Mathf.Abs(step.x), from.y + step.y / Mathf.Abs(step.y)] = null;
                     board[to.x, to.y] = board[from.x, from.y];
                     board[from.x, from.y] = null;
+
+                    if(destroyAction!=null)
+                    {
+                        destroyAction(killed);
+                    }
+
                 }
             }
             else
@@ -292,8 +298,20 @@ public class GameModel : MonoBehaviour {
         }
         else
         {
+            if (moveAction != null)
+            {
+                moveAction(board[from.x, from.y], to);
+            }
+
             board[to.x, to.y] = board[from.x, from.y];
             board[from.x, from.y] = null;
         }
+    }
+
+    public bool MoveChecker(Move move)
+    {
+        bool ret = false;
+        MoveSimulation(move.From, move.To, board, GameView.GetInstance().MoveChecker,GameView.GetInstance().DestroyChecker);
+        return ret;
     }
 }

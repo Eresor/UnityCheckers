@@ -80,12 +80,27 @@ public class HumanPlayer : Player {
             Move move = new Move(GameModel.GetInstance().GetCheckerFiled(selectedChecker),new Vec2(fData.X,fData.Y));
             if(GameModel.GetInstance().IsMoveValid(move))
             {
-                Debug.Log("Move Valid");
+                if(GameModel.GetInstance().MoveChecker(move))
+                {
+                    //todo: combo
+                }
+                else
+                {
+                    SelectedChecker = null;
+                    currentState = PlayerState.SelectingChecker;
+                    GameController.GetInstance().NextTurn();
+                }
             }
             else
             {
-                Debug.Log("Invalid move");
+                SelectedChecker = null;
+                currentState = PlayerState.SelectingChecker;
             }
+        }
+        else
+        {
+            SelectedChecker = null;
+            currentState = PlayerState.SelectingChecker;
         }
     }
 
