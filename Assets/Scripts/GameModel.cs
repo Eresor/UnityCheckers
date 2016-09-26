@@ -87,16 +87,16 @@ public class GameModel : MonoBehaviour {
         PossibleMoves = GetPossibleMoves(board, BoardSize, GameController.GetInstance().CurrentPlayer);
     }
 
-    public bool IsMoveValid(Move selectedMove)
+    public Move IsMoveValid(Move selectedMove)
     {
         foreach(Move move in PossibleMoves)
         {
             if(selectedMove.Equals(move))
             {
-                return true;
+                return move;
             }
         }
-        return false;
+        return null;
     }
 
 	// Use this for initialization
@@ -193,6 +193,7 @@ public class GameModel : MonoBehaviour {
         }
         else
         {
+            move.Children = new List<Move>();
             foreach(Vec2 target in captured)
             {
                 Move child = new Move(position, target);
@@ -272,7 +273,7 @@ public class GameModel : MonoBehaviour {
 
     static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData,Vec2> moveAction=null, System.Action<CheckerData> destroyAction = null)
     {
-        Vec2 step = new Vec2(from.x - to.x, from.y - to.y);
+        Vec2 step = new Vec2(to.x - from.x, to.y - from.y);
         if(Mathf.Abs(step.y)>1)
         {
             if(board[from.x,from.y].IsKing==false)
@@ -287,6 +288,10 @@ public class GameModel : MonoBehaviour {
                     if(destroyAction!=null)
                     {
                         destroyAction(killed);
+                    }
+                    if(moveAction!=null)
+                    {
+                        moveAction(board[to.x, to.y], to);
                     }
 
                 }
@@ -310,8 +315,15 @@ public class GameModel : MonoBehaviour {
 
     public bool MoveChecker(Move move)
     {
-        bool ret = false;
         MoveSimulation(move.From, move.To, board, GameView.GetInstance().MoveChecker,GameView.GetInstance().DestroyChecker);
-        return ret;
+        if(move.Children==null || move.Children.Count==0)
+        {
+            return false;
+        }
+        else
+        {
+            PossibleMoves = move.Children;
+            return true;
+        }
     }
 }

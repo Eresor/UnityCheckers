@@ -78,13 +78,10 @@ public class HumanPlayer : Player {
         {
             FieldData fData = hit.collider.GetComponent<FieldData>();
             Move move = new Move(GameModel.GetInstance().GetCheckerFiled(selectedChecker),new Vec2(fData.X,fData.Y));
-            if(GameModel.GetInstance().IsMoveValid(move))
+
+            if( ( move = GameModel.GetInstance().IsMoveValid(move) ) != null )
             {
-                if(GameModel.GetInstance().MoveChecker(move))
-                {
-                    //todo: combo
-                }
-                else
+                if( false == GameModel.GetInstance().MoveChecker(move) )
                 {
                     SelectedChecker = null;
                     currentState = PlayerState.SelectingChecker;

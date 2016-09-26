@@ -75,7 +75,7 @@ public class GameView : MonoBehaviour {
 
     public void DestroyChecker(CheckerData checker)
     {
-        Destroy(checker);
+        Destroy(checker.gameObject);
     }
 
     public void MoveChecker(CheckerData checker, Vec2 target)
