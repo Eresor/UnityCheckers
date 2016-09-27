@@ -326,4 +326,17 @@ public class GameModel : MonoBehaviour {
             return true;
         }
     }
+
+    public int CheckVictory()
+    {
+        int[] numPCheckers = { 0, 0 };
+        foreach(CheckerData checker in Board)
+        {
+            if(checker)
+            {
+                numPCheckers[(checker.Owner == GameController.GetInstance().Players[0] ? 0 : 1) ]++;
+            }
+        }
+        return (numPCheckers[0] == 0 ? 1 : ( numPCheckers[1] == 0 ? 0 : -1 ) );
+    }
 }

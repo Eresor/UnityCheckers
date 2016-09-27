@@ -70,5 +70,15 @@ public class GameController : MonoBehaviour {
     {
         CurrentPlayerIdx = 1 - CurrentPlayerIdx;
         GameModel.GetInstance().UpdatePossibleMoves();
+
+        int winner = GameModel.GetInstance().CheckVictory();
+
+        if(winner!=-1)
+        {
+            Debug.Log("The winner is player " + winner);
+            GameView.GetInstance().GameEndUI.SetActive(true);
+            GameView.GetInstance().GameEndUI.GetComponent<GameEndView>().SetWinnerText(winner);
+        }
+
     }
 }

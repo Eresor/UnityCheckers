@@ -18,6 +18,8 @@ public class GameView : MonoBehaviour {
 
     public GameObject CheckerPrefab;
 
+    public GameObject GameEndUI;
+
     private Vector3 GetFieldPosition(int x, int y, bool isChecker)
     {
         SpriteRenderer renderer = FieldPrefab.GetComponent<SpriteRenderer>();
@@ -28,7 +30,6 @@ public class GameView : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
         for(int y=0;y<GameModel.GetInstance().BoardSize;y++)
         {
             for(int x=0;x<GameModel.GetInstance().BoardSize;x++)
