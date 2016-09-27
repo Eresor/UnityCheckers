@@ -31,7 +31,7 @@ public class GameController : MonoBehaviour {
     public int CurrentPlayerIdx = 0;
 
 	// Use this for initialization
-	void Start () {
+	public void Init () {
 
         Players[0] = GameObject.Find("Player1").GetComponent<Player>();
         Players[0].Direction = 1;

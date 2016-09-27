@@ -70,7 +70,9 @@
     <Compile Include="Assets\Scripts\FieldData.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\GameEndView.cs" />
+    <Compile Include="Assets\Scripts\GameInitializer.cs" />
     <Compile Include="Assets\Scripts\GameModel.cs" />
+    <Compile Include="Assets\Scripts\GameSetupView.cs" />
     <Compile Include="Assets\Scripts\GameView.cs" />
     <Compile Include="Assets\Scripts\HumanPlayer.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />

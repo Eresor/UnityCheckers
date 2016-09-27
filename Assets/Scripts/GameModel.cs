@@ -100,7 +100,7 @@ public class GameModel : MonoBehaviour {
     }
 
 	// Use this for initialization
-	void Start () {
+	public void Init() {
 
         board = new CheckerData[BoardSize, BoardSize];
 	

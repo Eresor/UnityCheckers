@@ -29,7 +29,7 @@ public class GameView : MonoBehaviour {
     }
 
 	// Use this for initialization
-	void Start () {
+	public void Init() {
         for(int y=0;y<GameModel.GetInstance().BoardSize;y++)
         {
             for(int x=0;x<GameModel.GetInstance().BoardSize;x++)
