@@ -225,7 +225,7 @@ public class GameModel : MonoBehaviour {
         if(checker.IsKing == false)
         {
             Vec2 target = new Vec2(field.x + 1, field.y + checker.Owner.Direction);
-            if(target.x>=0 && target.x<size && target.y>=0 && target.y <size && board[target.x,target.y]==null)
+            if(target.x>=0 && target.x<size && target.y>=0 && target.y <size && board[target.x,target.y] == null)
             {
                 ret.Add(target);
             }
@@ -237,7 +237,55 @@ public class GameModel : MonoBehaviour {
         }
         else
         {
-            throw new System.Exception("Not implemented");
+            //throw new System.Exception("To repair.");
+            bool leftFinished = false, rightFinished = false;
+            for (int y=field.y+1;y<size;y++)
+            {
+                int distance = Mathf.Abs(field.y - y);
+
+                if(field.x + distance<size && !leftFinished && board[field.x+distance, y]==null)
+                {
+                    ret.Add(new Vec2(field.x + distance, y));
+                }
+                else
+                {
+                    leftFinished = true;
+                }
+
+                if (field.x - distance>=0 && !rightFinished && board[field.x - distance, y] == null)
+                {
+                    ret.Add(new Vec2(field.x - distance, y));
+                }
+                else
+                {
+                    rightFinished = true;
+                }
+            }
+
+            leftFinished = false;
+            rightFinished = false;
+            for (int y = field.y - 1; y >= 0; y--)
+            {
+                int distance = Mathf.Abs(field.y - y);
+
+                if (field.x + distance < size && !leftFinished && board[field.x + distance, y] == null)
+                {
+                    ret.Add(new Vec2(field.x + distance, y));
+                }
+                else
+                {
+                    leftFinished = true;
+                }
+
+                if (field.x - distance>=0 && !rightFinished && board[field.x - distance, y] == null)
+                {
+                    ret.Add(new Vec2(field.x -distance, y));
+                }
+                else
+                {
+                    rightFinished = true;
+                }
+            }
         }
 
         return ret;
@@ -266,50 +314,161 @@ public class GameModel : MonoBehaviour {
                 }
             }
         }
+        else
+        {
+            bool leftFinished = false, rightFinished = false;
+            for (int y = field.y + 1; y < size-1; y++)
+            {
+
+                int targetX = field.x + Mathf.Abs(field.y - y);
+                int behindX = targetX + 1;
+
+                if (behindX < size && !leftFinished && board[targetX, y] != null)
+                {
+                    for (int yy = y + 1; yy < size; yy++)
+                    {
+                        behindX = field.x + Mathf.Abs(field.y - yy);
+                        if (behindX >= size || board[behindX, yy] != null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            ret.Add(new Vec2(behindX, yy));
+                        }
+                    }
+                    leftFinished = true;
+                }
+
+                targetX = field.x - Mathf.Abs(field.y - y);
+                behindX = targetX - 1;
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                {
+                    for (int yy = y + 1; yy < size; yy++)
+                    {
+                        behindX = field.x - Mathf.Abs(field.y - yy);
+                        if (behindX < 0 || board[behindX, yy] != null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            ret.Add(new Vec2(behindX, yy));
+                        }
+                    }
+                    leftFinished = true;
+                }
+
+            }
+
+            leftFinished = false;
+            rightFinished = false;
+            for (int y = field.y -1; y > 0; y--)
+            {
+                int targetX = field.x + Mathf.Abs(field.y - y);
+                int behindX = targetX + 1;
+
+                if (behindX < size && !leftFinished && board[targetX, y] != null)
+                {
+                    for(int yy = y-1; yy>=0; yy--)
+                    {
+                        behindX = field.x + Mathf.Abs(field.y - yy);
+                        if (behindX>=size || board[behindX,yy]!=null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            ret.Add(new Vec2(behindX, yy));
+                        }
+                    }
+                    leftFinished = true;
+                }
+
+                targetX = field.x - Mathf.Abs(field.y - y);
+                behindX = targetX - 1;
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                {
+                    for (int yy = y - 1; yy >= 0; yy--)
+                    {
+                        behindX = field.x - Mathf.Abs(field.y - yy);
+                        if (behindX < 0 || board[behindX, yy] != null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            ret.Add(new Vec2(behindX, yy));
+                        }
+                    }
+                    leftFinished = true;
+                }
+            }
+        }
 
 
         return ret;
     }
 
-    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData,Vec2> moveAction=null, System.Action<CheckerData> destroyAction = null)
+    //this function do not validate move!
+    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null)
     {
-        Vec2 step = new Vec2(to.x - from.x, to.y - from.y);
-        if(Mathf.Abs(step.y)>1)
+        CheckerData selected = board[from.x, from.y];
+        Vec2 direction = new Vec2((to.x - from.x) / Mathf.Abs(to.x - from.x), (to.y - from.y) / Mathf.Abs(to.y - from.y));
+
+        if (selected.IsKing == false)
         {
-            if(board[from.x,from.y].IsKing==false)
+
+            if(Mathf.Abs(to.y-from.y)>1)
             {
-                CheckerData killed = board[from.x + (step.x) / Mathf.Abs(step.x), from.y + step.y / Mathf.Abs(step.y)];
-                if(killed!=null)
+                CheckerData killed = board[from.x + direction.x, from.y + direction.y];
+                board[from.x + direction.x, from.y + direction.y] = null;
+                if (destroyAction != null)
                 {
-                    board[from.x + (step.x) / Mathf.Abs(step.x), from.y + step.y / Mathf.Abs(step.y)] = null;
-                    board[to.x, to.y] = board[from.x, from.y];
-                    board[from.x, from.y] = null;
-
-                    if(destroyAction!=null)
-                    {
-                        destroyAction(killed);
-                    }
-                    if(moveAction!=null)
-                    {
-                        moveAction(board[to.x, to.y], to);
-                    }
-
+                    destroyAction(killed);
                 }
             }
-            else
+
+            board[to.x, to.y] = selected;
+            board[from.x, from.y] = null;
+            if (moveAction != null)
             {
-                throw new System.Exception("Not implemented");
+                moveAction(board[to.x, to.y], to);
+            }
+
+            //checking promotion into king
+            if ((to.y == 0 && selected.Owner.Direction==-1) || (to.y == board.GetUpperBound(0) && selected.Owner.Direction == 1))
+            {
+                selected.IsKing = true;
             }
         }
         else
         {
-            if (moveAction != null)
+            //iterate through board to check if there are enemies;
+            CheckerData killed;
+            for (int i = 1; i < Mathf.Abs(to.y - from.y); i++)
             {
-                moveAction(board[from.x, from.y], to);
+
+                if ((killed = board[from.x + i * direction.x, from.y + i * direction.y]) != null && killed.Owner != selected.Owner)
+                {
+                    board[from.x + i * direction.x, from.y + i * direction.y] = null;
+                    if (destroyAction != null)
+                    {
+                        destroyAction(killed);
+                    }
+                    break;
+                }
+
             }
 
-            board[to.x, to.y] = board[from.x, from.y];
+            board[to.x, to.y] = selected;
             board[from.x, from.y] = null;
+
+            if (moveAction != null)
+            {
+                moveAction(board[to.x, to.y], to);
+            }
+
         }
     }
 

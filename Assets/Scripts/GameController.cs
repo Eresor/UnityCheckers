@@ -18,6 +18,10 @@ public class GameController : MonoBehaviour {
 
     static public readonly string FieldTag = "Field";
 
+    static public readonly string Player1Name = "Player1";
+
+    static public readonly string Player2Name = "Player2";
+
     public Player CurrentPlayer
     {
         get
@@ -33,10 +37,10 @@ public class GameController : MonoBehaviour {
 	// Use this for initialization
 	public void Init () {
 
-        Players[0] = GameObject.Find("Player1").GetComponent<Player>();
+        Players[0] = GameObject.Find(Player1Name).GetComponent<Player>();
         Players[0].Direction = 1;
 
-        Players[1] = GameObject.Find("Player2").GetComponent<Player>();
+        Players[1] = GameObject.Find(Player2Name).GetComponent<Player>();
         Players[1].Direction = -1;
 
         for (int y = 0; y < GameModel.GetInstance().BoardSize; y++)
