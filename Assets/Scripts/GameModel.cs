@@ -131,9 +131,42 @@ public class GameModel : MonoBehaviour {
         board[position.x, position.y] = data;
     }
 
+    private static bool[,] CopyIsKingProperty(CheckerData[,] board)
+    {
+        Vec2 size = new Vec2(board.GetLength(0), board.GetLength(1));
+        bool[,] copy = new bool[size.x,size.y];
+        for(int y=0;y<size.y;y++)
+        {
+            for(int x=0;x<size.x; x++)
+            {
+                if(board[x,y])
+                {
+                    copy[x, y] = board[x, y].IsKing;
+                }
+            }
+        }
+        return copy;
+    }
+
+    private static void RestoreOrginalData(CheckerData[,] board, bool[,] copy)
+    {
+        Vec2 size = new Vec2(board.GetLength(0), board.GetLength(1));
+        for (int y = 0; y < size.y; y++)
+        {
+            for (int x = 0; x < size.x; x++)
+            {
+                if(board[x,y])
+                {
+                    board[x, y].IsKing = copy[x, y];
+                }
+            }
+        }
+    }
+
     private static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
     {
         List<Move> ret = new List<Move>();
+        bool[,] copy = CopyIsKingProperty(board);
         bool foundCaptureMove = false;
         int maxCombo = 0;
         for (int y=0;y<size;y++)
@@ -178,7 +211,7 @@ public class GameModel : MonoBehaviour {
                 }
             }
         }
-
+        RestoreOrginalData(board, copy);
         return ret;
     }
 
@@ -411,7 +444,7 @@ public class GameModel : MonoBehaviour {
     }
 
     //this function do not validate move!
-    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null)
+    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null, System.Action<CheckerData> promoteAction = null)
     {
         CheckerData selected = board[from.x, from.y];
         Vec2 direction = new Vec2((to.x - from.x) / Mathf.Abs(to.x - from.x), (to.y - from.y) / Mathf.Abs(to.y - from.y));
@@ -440,6 +473,10 @@ public class GameModel : MonoBehaviour {
             if ((to.y == 0 && selected.Owner.Direction==-1) || (to.y == board.GetUpperBound(0) && selected.Owner.Direction == 1))
             {
                 selected.IsKing = true;
+                if(promoteAction!=null)
+                {
+                    promoteAction(selected);
+                }
             }
         }
         else
@@ -474,7 +511,7 @@ public class GameModel : MonoBehaviour {
 
     public bool MoveChecker(Move move)
     {
-        MoveSimulation(move.From, move.To, board, GameView.GetInstance().MoveChecker,GameView.GetInstance().DestroyChecker);
+        MoveSimulation(move.From, move.To, board, GameView.GetInstance().MoveChecker,GameView.GetInstance().DestroyChecker,GameView.GetInstance().Promote);
         if(move.Children==null || move.Children.Count==0)
         {
             return false;
