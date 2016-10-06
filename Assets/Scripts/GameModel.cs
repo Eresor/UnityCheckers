@@ -51,6 +51,7 @@ public class Move
         }
         return false;
     }
+
 }
 
 public class GameModel : MonoBehaviour {
@@ -163,7 +164,7 @@ public class GameModel : MonoBehaviour {
         }
     }
 
-    private static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
+    public static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
     {
         List<Move> ret = new List<Move>();
         bool[,] copy = CopyIsKingProperty(board);
@@ -356,7 +357,7 @@ public class GameModel : MonoBehaviour {
                 int targetX = field.x + Mathf.Abs(field.y - y);
                 int behindX = targetX + 1;
 
-                if (behindX < size && !leftFinished && board[targetX, y] != null)
+                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner!=checker.Owner)
                 {
                     for (int yy = y + 1; yy < size; yy++)
                     {
@@ -375,7 +376,7 @@ public class GameModel : MonoBehaviour {
 
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     for (int yy = y + 1; yy < size; yy++)
                     {
@@ -401,7 +402,7 @@ public class GameModel : MonoBehaviour {
                 int targetX = field.x + Mathf.Abs(field.y - y);
                 int behindX = targetX + 1;
 
-                if (behindX < size && !leftFinished && board[targetX, y] != null)
+                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     for(int yy = y-1; yy>=0; yy--)
                     {
@@ -420,7 +421,7 @@ public class GameModel : MonoBehaviour {
 
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     for (int yy = y - 1; yy >= 0; yy--)
                     {
@@ -444,7 +445,7 @@ public class GameModel : MonoBehaviour {
     }
 
     //this function do not validate move!
-    static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null, System.Action<CheckerData> promoteAction = null)
+    public static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null, System.Action<CheckerData> promoteAction = null)
     {
         CheckerData selected = board[from.x, from.y];
         Vec2 direction = new Vec2((to.x - from.x) / Mathf.Abs(to.x - from.x), (to.y - from.y) / Mathf.Abs(to.y - from.y));
