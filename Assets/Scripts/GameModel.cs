@@ -196,7 +196,7 @@ public class GameModel : MonoBehaviour {
                             Move move = new Move(currPos, target);
                             CheckerData[,] clone = board.Clone() as CheckerData[,];
                             MoveSimulation(currPos, target, clone);
-                            int currCombo = SimulateCombo(target, clone, size, 0, move);
+                            int currCombo = SimulateCombo(target, clone, size, 1, move);
                             if(currCombo > maxCombo)
                             {
                                 ret.Clear();
@@ -271,7 +271,6 @@ public class GameModel : MonoBehaviour {
         }
         else
         {
-            //throw new System.Exception("To repair.");
             bool leftFinished = false, rightFinished = false;
             for (int y=field.y+1;y<size;y++)
             {
