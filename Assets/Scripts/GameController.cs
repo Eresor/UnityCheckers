@@ -66,7 +66,10 @@ public class GameController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        CurrentPlayer.ProcessTurn();
+        if(CurrentPlayer)
+        {
+            CurrentPlayer.ProcessTurn();
+        }
 
 	}
 
@@ -80,6 +83,10 @@ public class GameController : MonoBehaviour {
         if(winner!=-1)
         {
             Debug.Log("The winner is player " + winner);
+            foreach(Player p in Players)
+            {
+                Destroy(p.gameObject);
+            }
             GameView.GetInstance().GameEndUI.SetActive(true);
             GameView.GetInstance().GameEndUI.GetComponent<GameEndView>().SetWinnerText(winner);
         }

@@ -51,7 +51,6 @@ public class Move
         }
         return false;
     }
-
 }
 
 public class GameModel : MonoBehaviour {
@@ -67,9 +66,9 @@ public class GameModel : MonoBehaviour {
 
     private static GameModel instance = null;
 
-    public int BoardSize = 10;
+    public int BoardSize = 4;
 
-    public int NumCheckersRows = 2;
+    public int NumCheckersRows = 1;
 
     public CheckerData[,] board;
 
@@ -81,7 +80,7 @@ public class GameModel : MonoBehaviour {
         }
     }
 
-    private List<Move> PossibleMoves;
+    public List<Move> PossibleMoves;
 
     public void UpdatePossibleMoves()
     {
@@ -132,7 +131,9 @@ public class GameModel : MonoBehaviour {
         board[position.x, position.y] = data;
     }
 
-    private static bool[,] CopyIsKingProperty(CheckerData[,] board)
+    //zapisanie tej własności jest wymagane, ponieważ przy rekurencyjnych wywołaniach symulacji ruchów tworzą się przekłamania
+    //ruchy "damek" sprawdzane są dla pionków, które damkami nie są, bo SimulateMove zmienił wartość checker.IsKing
+    public static bool[,] CopyIsKingProperty(CheckerData[,] board)
     {
         Vec2 size = new Vec2(board.GetLength(0), board.GetLength(1));
         bool[,] copy = new bool[size.x,size.y];
@@ -149,7 +150,8 @@ public class GameModel : MonoBehaviour {
         return copy;
     }
 
-    private static void RestoreOrginalData(CheckerData[,] board, bool[,] copy)
+    //funkcja przywracajaca dane z CopyIsKingProperty
+    public static void RestoreOrginalData(CheckerData[,] board, bool[,] copy)
     {
         Vec2 size = new Vec2(board.GetLength(0), board.GetLength(1));
         for (int y = 0; y < size.y; y++)
@@ -167,6 +169,7 @@ public class GameModel : MonoBehaviour {
     public static List<Move> GetPossibleMoves(CheckerData[,] board, int size, Player player)
     {
         List<Move> ret = new List<Move>();
+        //zapisujemy orginalne dane pionków, gdyż mogą ulec zmianie w trakcie rekurencyjnego szukania ruchów
         bool[,] copy = CopyIsKingProperty(board);
         bool foundCaptureMove = false;
         int maxCombo = 0;
@@ -175,11 +178,11 @@ public class GameModel : MonoBehaviour {
             for(int x=0;x<size;x++)
             {
                 CheckerData curr;
-                if( ( curr = board[x,y] ) != null && curr.Owner == player)
+                if( ( curr = board[x,y] ) != null && curr.Owner == player)  //iteracja po wszystkich pionkach aktualnego gracza
                 {
                     Vec2 currPos = new Vec2(x, y);
                     List<Vec2> captured = GetCaptureList(currPos, board, size);
-                    if (captured.Count == 0 && foundCaptureMove==false)
+                    if (captured.Count == 0 && foundCaptureMove==false) //ruchów "nie zbijających" szukamy tylko jeśli jeszcze nie znaleźliśmy żadnego bicia
                     {
                         List<Vec2> nonKillingMoves = GetNonKillingMovesForField(currPos, board, size);
                         foreach(Vec2 target in nonKillingMoves)
@@ -190,14 +193,18 @@ public class GameModel : MonoBehaviour {
                     else
                     {
                         foundCaptureMove = true;
-                        List<Vec2> possibleTargets = new List<Vec2>();
-                        foreach (Vec2 target in captured)
+                        foreach (Vec2 target in captured)       //w pętli wyszukujemy ruch o najwyższej wartości "Combo", bo musimy wykonać ten najlepszy
                         {
                             Move move = new Move(currPos, target);
-                            CheckerData[,] clone = board.Clone() as CheckerData[,];
-                            MoveSimulation(currPos, target, clone);
-                            int currCombo = SimulateCombo(target, clone, size, 1, move);
-                            if(currCombo > maxCombo)
+
+                            CheckerData[] lineCopy = CopyLine(board, currPos, target);
+                            bool[,] kingsData = GameModel.CopyIsKingProperty(board);
+
+                            MoveSimulation(currPos, target, board);
+                            int currCombo = SimulateCombo(target, board, size, 1, move);
+                            RestoreLine(board, lineCopy, currPos, target);
+                            GameModel.RestoreOrginalData(board, kingsData);
+                            if (currCombo > maxCombo)
                             {
                                 ret.Clear();
                                 maxCombo = currCombo;
@@ -212,8 +219,33 @@ public class GameModel : MonoBehaviour {
                 }
             }
         }
+
+        //po symulacji ruchu przywracamy orginalne dane pionkom
         RestoreOrginalData(board, copy);
         return ret;
+    }
+
+    //kopiowanie fragmentu planszy - linii po której poruszał się pionek, by przywrócic jej właściwość po symulacji
+    public static CheckerData[] CopyLine(CheckerData[,] board, Vec2 from, Vec2 to)
+    {
+        CheckerData[] data = new CheckerData[Mathf.Abs(from.y - to.y)+1];
+        Vec2 dir = new Vec2((to.x - from.x)/Mathf.Abs(to.x-from.x),
+            (to.y - from.y) / Mathf.Abs(to.y - from.y));
+        for(int mul=0;mul<data.GetLength(0);mul++)
+        {
+            data[mul] = board[from.x + dir.x * mul, from.y + dir.y * mul];
+        }
+        return data;
+    }
+
+    public static void RestoreLine(CheckerData[,] board, CheckerData[] copy, Vec2 from, Vec2 to)
+    {
+        Vec2 dir = new Vec2((to.x - from.x) / Mathf.Abs(to.x - from.x),
+            (to.y - from.y) / Mathf.Abs(to.y - from.y));
+        for (int mul = 0; mul < copy.GetLength(0); mul++)
+        {
+            board[from.x + dir.x * mul, from.y + dir.y * mul] = copy[mul];
+        }
     }
 
     static int SimulateCombo(Vec2 position, CheckerData[,] board, int size, int counter, Move move)
@@ -228,12 +260,14 @@ public class GameModel : MonoBehaviour {
         else
         {
             move.Children = new List<Move>();
-            foreach(Vec2 target in captured)
+            foreach(Vec2 target in captured)    //szukamy najdluższego combo
             {
                 Move child = new Move(position, target);
-                CheckerData[,] copy = board.Clone() as CheckerData[,];
-                MoveSimulation(position, target, copy);
-                int newComboCounter = SimulateCombo(target, copy, size, counter+1, child);
+                CheckerData[] lineCopy = CopyLine(board, position, target);
+                bool[,] kingsData = GameModel.CopyIsKingProperty(board);
+                //przed wywołaniem zapisujemy stare właściwości by odtworzyć stan planszy (oszczędność pamięci zamiast kopiować całą używajac board.Clone() )
+                MoveSimulation(position, target, board);
+                int newComboCounter = SimulateCombo(target, board, size, counter+1, child);
                 if(newComboCounter>insideCounter)
                 {
                     move.Children.Clear();
@@ -244,6 +278,8 @@ public class GameModel : MonoBehaviour {
                 {
                     move.Children.Add(child);
                 }
+                RestoreLine(board, lineCopy, position, target);
+                GameModel.RestoreOrginalData(board, kingsData);
             }
         }
 
@@ -269,14 +305,15 @@ public class GameModel : MonoBehaviour {
                 ret.Add(target);
             }
         }
-        else
+        else  //damka może poruszać się dopóki nie napotka zajętego pola, zarówno w lewo jak i w prawo - warunki finished
         {
-            bool leftFinished = false, rightFinished = false;
-            for (int y=field.y+1;y<size;y++)
+            bool leftFinished = false, rightFinished = false;   //zamiast używać czterech pętli dla każdego kierunku używany jednej na "przód" i drugiej na "tył"
+                                                                // zmienne xFinished pozwalają "obciać" poszukiwanie, gdy z jednej strony napotkalismy juz zajęte pole
+            for (int y=field.y+1;y<size;y++)        
             {
                 int distance = Mathf.Abs(field.y - y);
 
-                if(field.x + distance<size && !leftFinished && board[field.x+distance, y]==null)
+                if(!leftFinished && field.x + distance<size && board[field.x+distance, y]==null)
                 {
                     ret.Add(new Vec2(field.x + distance, y));
                 }
@@ -285,7 +322,7 @@ public class GameModel : MonoBehaviour {
                     leftFinished = true;
                 }
 
-                if (field.x - distance>=0 && !rightFinished && board[field.x - distance, y] == null)
+                if (!rightFinished && field.x - distance>=0 && board[field.x - distance, y] == null)
                 {
                     ret.Add(new Vec2(field.x - distance, y));
                 }
@@ -301,7 +338,7 @@ public class GameModel : MonoBehaviour {
             {
                 int distance = Mathf.Abs(field.y - y);
 
-                if (field.x + distance < size && !leftFinished && board[field.x + distance, y] == null)
+                if (!leftFinished && field.x + distance < size && board[field.x + distance, y] == null)
                 {
                     ret.Add(new Vec2(field.x + distance, y));
                 }
@@ -310,7 +347,7 @@ public class GameModel : MonoBehaviour {
                     leftFinished = true;
                 }
 
-                if (field.x - distance>=0 && !rightFinished && board[field.x - distance, y] == null)
+                if (!rightFinished && field.x - distance>=0 && board[field.x - distance, y] == null)
                 {
                     ret.Add(new Vec2(field.x -distance, y));
                 }
@@ -350,15 +387,16 @@ public class GameModel : MonoBehaviour {
         else
         {
             bool leftFinished = false, rightFinished = false;
-            for (int y = field.y + 1; y < size-1; y++)
+            for (int y = field.y + 1; y < size-1; y++)  //pętla po wszystkich "y" w danym kierunku, przód
             {
 
                 int targetX = field.x + Mathf.Abs(field.y - y);
                 int behindX = targetX + 1;
 
-                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner!=checker.Owner)
+                //warunki dla "w prawo"
+                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner!=checker.Owner) //jeżeli napotkaliśmy pionek do zbicia
                 {
-                    for (int yy = y + 1; yy < size; yy++)
+                    for (int yy = y + 1; yy < size; yy++)   //musimy do możliwych ruchów dodać wszystkie pola znajdujące się za pionkiem do zbicia, aż nie natrafimy na pole zajęte
                     {
                         behindX = field.x + Mathf.Abs(field.y - yy);
                         if (behindX >= size || board[behindX, yy] != null)
@@ -373,6 +411,7 @@ public class GameModel : MonoBehaviour {
                     leftFinished = true;
                 }
 
+                //warunki dla "w lewo", jak wyżej
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
                 if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
@@ -396,11 +435,13 @@ public class GameModel : MonoBehaviour {
 
             leftFinished = false;
             rightFinished = false;
-            for (int y = field.y -1; y > 0; y--)
+
+            for (int y = field.y -1; y > 0; y--) //pętla po wszystkich "y" w danym kierunku, tył
             {
                 int targetX = field.x + Mathf.Abs(field.y - y);
                 int behindX = targetX + 1;
 
+                //warunki dla "w prawo"
                 if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     for(int yy = y-1; yy>=0; yy--)
@@ -418,6 +459,7 @@ public class GameModel : MonoBehaviour {
                     leftFinished = true;
                 }
 
+                //warunki dla "w lewo"
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
                 if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
@@ -443,12 +485,14 @@ public class GameModel : MonoBehaviour {
         return ret;
     }
 
-    //this function do not validate move!
+    //ta funkcja nie waliduje poprawności ruchów
+    //przed jej wywołaniem do symulacji należy skopiować właściwość IsKing (CopyIsKingProperty) oraz fragment planszy na którym porusza się pionek
     public static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null, System.Action<CheckerData> promoteAction = null)
     {
         CheckerData selected = board[from.x, from.y];
         Vec2 direction = new Vec2((to.x - from.x) / Mathf.Abs(to.x - from.x), (to.y - from.y) / Mathf.Abs(to.y - from.y));
 
+        Debug.Assert(selected != null);
         if (selected.IsKing == false)
         {
 
@@ -525,14 +569,15 @@ public class GameModel : MonoBehaviour {
 
     public int CheckVictory()
     {
-        int[] numPCheckers = { 0, 0 };
-        foreach(CheckerData checker in Board)
+        return (PossibleMoves.Count == 0 ? GameController.GetInstance().CurrentPlayerIdx : -1);
+        /*int[] numPCheckers = { 0, 0 };
+        foreach (CheckerData checker in Board)
         {
-            if(checker)
+            if (checker)
             {
-                numPCheckers[(checker.Owner == GameController.GetInstance().Players[0] ? 0 : 1) ]++;
+                numPCheckers[(checker.Owner == GameController.GetInstance().Players[0] ? 0 : 1)]++;
             }
         }
-        return (numPCheckers[0] == 0 ? 1 : ( numPCheckers[1] == 0 ? 0 : -1 ) );
+        return (numPCheckers[0] == 0 ? 1 : (numPCheckers[1] == 0 ? 0 : -1));*/
     }
 }
