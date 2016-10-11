@@ -394,41 +394,55 @@ public class GameModel : MonoBehaviour {
                 int behindX = targetX + 1;
 
                 //warunki dla "w prawo"
-                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner!=checker.Owner) //jeżeli napotkaliśmy pionek do zbicia
+                if (behindX < size && !leftFinished && board[targetX, y] != null) //jeżeli napotkaliśmy pionek do zbicia
                 {
-                    for (int yy = y + 1; yy < size; yy++)   //musimy do możliwych ruchów dodać wszystkie pola znajdujące się za pionkiem do zbicia, aż nie natrafimy na pole zajęte
+                    if(board[targetX, y].Owner != checker.Owner)    //jeśli napotkalismy pionek przeciwnika bijemy
                     {
-                        behindX = field.x + Mathf.Abs(field.y - yy);
-                        if (behindX >= size || board[behindX, yy] != null)
+                        for (int yy = y + 1; yy < size; yy++)   //musimy do możliwych ruchów dodać wszystkie pola znajdujące się za pionkiem do zbicia, aż nie natrafimy na pole zajęte
                         {
-                            break;
+                            behindX = field.x + Mathf.Abs(field.y - yy);
+                            if (behindX >= size || board[behindX, yy] != null)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ret.Add(new Vec2(behindX, yy));
+                            }
                         }
-                        else
-                        {
-                            ret.Add(new Vec2(behindX, yy));
-                        }
+                        leftFinished = true;
                     }
-                    leftFinished = true;
+                    else//w przeciwnym wypadku przerywamy
+                    {
+                        leftFinished = true;
+                    }
                 }
 
                 //warunki dla "w lewo", jak wyżej
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
                 {
-                    for (int yy = y + 1; yy < size; yy++)
+                    if (board[targetX, y].Owner != checker.Owner)
                     {
-                        behindX = field.x - Mathf.Abs(field.y - yy);
-                        if (behindX < 0 || board[behindX, yy] != null)
+                        for (int yy = y + 1; yy < size; yy++)
                         {
-                            break;
+                            behindX = field.x - Mathf.Abs(field.y - yy);
+                            if (behindX < 0 || board[behindX, yy] != null)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ret.Add(new Vec2(behindX, yy));
+                            }
                         }
-                        else
-                        {
-                            ret.Add(new Vec2(behindX, yy));
-                        }
+                        rightFinished = true;
                     }
-                    leftFinished = true;
+                    else
+                    {
+                        rightFinished = true;
+                    }
                 }
 
             }
@@ -442,41 +456,55 @@ public class GameModel : MonoBehaviour {
                 int behindX = targetX + 1;
 
                 //warunki dla "w prawo"
-                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
+                if (behindX < size && !leftFinished && board[targetX, y] != null)
                 {
-                    for(int yy = y-1; yy>=0; yy--)
+                    if (board[targetX, y].Owner != checker.Owner)
                     {
-                        behindX = field.x + Mathf.Abs(field.y - yy);
-                        if (behindX>=size || board[behindX,yy]!=null)
+                        for (int yy = y - 1; yy >= 0; yy--)
                         {
-                            break;
+                            behindX = field.x + Mathf.Abs(field.y - yy);
+                            if (behindX >= size || board[behindX, yy] != null)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ret.Add(new Vec2(behindX, yy));
+                            }
                         }
-                        else
-                        {
-                            ret.Add(new Vec2(behindX, yy));
-                        }
+                        leftFinished = true;
                     }
-                    leftFinished = true;
+                    else
+                    {
+                        leftFinished = true;
+                    }
                 }
 
                 //warunki dla "w lewo"
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
                 {
-                    for (int yy = y - 1; yy >= 0; yy--)
+                    if(board[targetX, y].Owner != checker.Owner)
                     {
-                        behindX = field.x - Mathf.Abs(field.y - yy);
-                        if (behindX < 0 || board[behindX, yy] != null)
+                        for (int yy = y - 1; yy >= 0; yy--)
                         {
-                            break;
+                            behindX = field.x - Mathf.Abs(field.y - yy);
+                            if (behindX < 0 || board[behindX, yy] != null)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ret.Add(new Vec2(behindX, yy));
+                            }
                         }
-                        else
-                        {
-                            ret.Add(new Vec2(behindX, yy));
-                        }
+                        rightFinished = true;
                     }
-                    leftFinished = true;
+                    else
+                    {
+                        rightFinished = true;
+                    }
                 }
             }
         }
