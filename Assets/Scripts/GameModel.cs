@@ -394,7 +394,7 @@ public class GameModel : MonoBehaviour {
                 int behindX = targetX + 1;
 
                 //warunki dla "w prawo"
-                if (behindX < size && !leftFinished && board[targetX, y] != null) //jeżeli napotkaliśmy pionek do zbicia
+                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner) //jeżeli napotkaliśmy pionek do zbicia
                 {
                     if(board[targetX, y].Owner != checker.Owner)    //jeśli napotkalismy pionek przeciwnika bijemy
                     {
@@ -421,7 +421,7 @@ public class GameModel : MonoBehaviour {
                 //warunki dla "w lewo", jak wyżej
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     if (board[targetX, y].Owner != checker.Owner)
                     {

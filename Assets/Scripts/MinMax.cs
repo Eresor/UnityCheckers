@@ -107,7 +107,7 @@ public class MinMax : AiAlgorithm {
                 GameModel.RestoreLine(board, dataCopy, move.From, move.To);
                 GameModel.RestoreOrginalData(board, propertyCopy);
                 //zwroc ocene ruchu
-                return UnityEngine.Random.Range(0, 100);
+                return Assets.Scripts.Heuristics.SimpleGrade(board, boardSize, GameController.GetInstance().Players[playerIdx]);
             }
         }
 
