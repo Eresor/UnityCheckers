@@ -8,20 +8,20 @@ public class MinMax : AiAlgorithm {
 
     private int MaxDepth = 4;
 
-    public override Move Run(CheckerData[,] board, int boardSize, Player player)
+    public override Move Run(CheckerData[,] board, int boardSize, int playerIdx)
     {
-        m_player = player;
+        m_player = GameController.GetInstance().Players[playerIdx];
         //kopiujemy właściwości pionków
         bool[,] copy = GameModel.CopyIsKingProperty(board);
 
         //dla wyszystkich możliwych aktualnie ruchów wykonujemy RunMinMax(), szukamy najlepszego
-        List<Move> possibleMoves = GameModel.GetPossibleMoves(board, boardSize, player);
+        List<Move> possibleMoves = GameModel.GetPossibleMoves(board, boardSize, m_player);
 
         float currentMaxValue = float.MinValue;
         Move currentSelectedMove = null;
         foreach(Move move in possibleMoves)
         {
-            float value = RunMinMax();
+            float value = RunMinMax(move, board, boardSize, playerIdx, 0, true);
             if(value>=currentMaxValue)
             {
                 currentMaxValue = value;
@@ -71,7 +71,7 @@ public class MinMax : AiAlgorithm {
             if(!min)
             {
                 move.Children.Clear();
-                Debug.Assert(selected == null);
+                Debug.Assert(selected != null);
                 move.Children.Add(selected);
             }
 
@@ -81,26 +81,41 @@ public class MinMax : AiAlgorithm {
             // zwróc ocenę ruchu
             return grade;
         }
-        //w przeciwnym wypadku
+        else //w przeciwnym wypadku
         {
-            //jeżeli depth < MaxDepth
+            if(depth < MaxDepth)//jeżeli depth < MaxDepth
             {
                 //znadjź wszystkie możliwe ruchy dla przeciwnika aktualnego gracza
+                List<Move> possibleEnemyMoves = GameModel.GetPossibleMoves(board, boardSize, GameController.GetInstance().Players[1 - playerIdx]);
+                
                 //dla każdego ruchu
+                foreach (Move enemyMove in possibleEnemyMoves)
                 {
                     //RunMinMax(depth+1,!min)
+                    float val = RunMinMax(enemyMove, board, boardSize, 1 - playerIdx, depth + 1, !min);
                     //znajdź najlepszy / najgorszy
+                    if( ( min && val<=grade) || ( !min && val >= grade ) )
+                    {
+                        grade = val;
+                    }
                 }
             }
             //w przeciwnym wypadku
+            else
             {
                 //odwtorz wl. planszy
+                GameModel.RestoreLine(board, dataCopy, move.From, move.To);
+                GameModel.RestoreOrginalData(board, propertyCopy);
                 //zwroc ocene ruchu
+                return UnityEngine.Random.Range(0, 100);
             }
         }
 
         //odwtórz wlaściwości planszy
+        GameModel.RestoreLine(board, dataCopy, move.From, move.To);
+        GameModel.RestoreOrginalData(board, propertyCopy);
         //zwracamy ocenę ruchu
+        return grade;
     }
 
     // Use this for initialization

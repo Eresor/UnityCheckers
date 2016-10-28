@@ -14,7 +14,7 @@ public class AiPlayer : Player {
     private IEnumerator Process()
     {
         //właczamy algorytm
-        Move selected = Algorithm.Run(GameModel.GetInstance().Board, GameModel.GetInstance().BoardSize, GameController.GetInstance().CurrentPlayer);
+        Move selected = Algorithm.Run(GameModel.GetInstance().Board, GameModel.GetInstance().BoardSize, GameController.GetInstance().CurrentPlayerIdx);
 
         //wlaściwy ruch
         while(GameModel.GetInstance().MoveChecker(selected))

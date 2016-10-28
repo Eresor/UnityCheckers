@@ -35,8 +35,25 @@ public class GameInitializer : MonoBehaviour {
         GameObject p1 = Instantiate(PlayerPrefab);
         p1.name = GameController.Player1Name;
 
+        if(GameSetupViewUI.P1Human.isOn)
+        {
+            p1.AddComponent<HumanPlayer>();
+        }
+        else
+        {
+            p1.AddComponent<AiPlayer>();
+        }
+
         GameObject p2 = Instantiate(PlayerPrefab);
         p2.name = GameController.Player2Name;
+        if (GameSetupViewUI.P2Human.isOn)
+        {
+            p2.AddComponent<HumanPlayer>();
+        }
+        else
+        {
+            p2.AddComponent<AiPlayer>();
+        }
 
 
         Camera.main.GetComponent<GameView>().Init();
