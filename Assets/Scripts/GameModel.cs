@@ -456,7 +456,7 @@ public class GameModel : MonoBehaviour {
                 int behindX = targetX + 1;
 
                 //warunki dla "w prawo"
-                if (behindX < size && !leftFinished && board[targetX, y] != null)
+                if (behindX < size && !leftFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     if (board[targetX, y].Owner != checker.Owner)
                     {
@@ -483,7 +483,7 @@ public class GameModel : MonoBehaviour {
                 //warunki dla "w lewo"
                 targetX = field.x - Mathf.Abs(field.y - y);
                 behindX = targetX - 1;
-                if (behindX >= 0 && !rightFinished && board[targetX, y] != null)
+                if (behindX >= 0 && !rightFinished && board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
                 {
                     if(board[targetX, y].Owner != checker.Owner)
                     {
