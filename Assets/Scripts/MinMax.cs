@@ -8,6 +8,8 @@ public class MinMax : AiAlgorithm {
 
     private int MaxDepth = 4;
 
+    private int _counter = 0;
+
     public override Move Run(CheckerData[,] board, int boardSize, int playerIdx)
     {
         m_player = GameController.GetInstance().Players[playerIdx];
@@ -17,6 +19,7 @@ public class MinMax : AiAlgorithm {
         //dla wyszystkich możliwych aktualnie ruchów wykonujemy RunMinMax(), szukamy najlepszego
         List<Move> possibleMoves = GameModel.GetPossibleMoves(board, boardSize, m_player);
 
+        _counter = 0;
         float currentMaxValue = float.MinValue;
         Move currentSelectedMove = null;
         foreach(Move move in possibleMoves)
@@ -31,7 +34,7 @@ public class MinMax : AiAlgorithm {
 
         //przywracamy właściwości pionków
         GameModel.RestoreOrginalData(board, copy);
-
+        Debug.Log(_counter);
         return currentSelectedMove;
     }
 
@@ -107,6 +110,7 @@ public class MinMax : AiAlgorithm {
                 GameModel.RestoreLine(board, dataCopy, move.From, move.To);
                 GameModel.RestoreOrginalData(board, propertyCopy);
                 //zwroc ocene ruchu
+                _counter++;
                 return Assets.Scripts.Heuristics.SimpleGrade(board, boardSize, GameController.GetInstance().Players[playerIdx]);
             }
         }
