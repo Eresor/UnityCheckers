@@ -30,12 +30,14 @@ public class GameView : MonoBehaviour {
 
     public Color HighlightColor = Color.blue;
 
+    private Quaternion initialRotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+
     public bool FinishedAnimation { get; private set; }
 
     private Vector3 GetFieldPosition(int x, int y, bool isChecker)
     {
-        SpriteRenderer renderer = FieldPrefab.GetComponent<SpriteRenderer>();
-        float fieldSize = renderer.sprite.bounds.size.x * FieldPrefab.transform.localScale.x;
+        MeshRenderer renderer = FieldPrefab.GetComponent<MeshRenderer>();
+        float fieldSize = renderer.bounds.size.x * FieldPrefab.transform.localScale.x;
         float startFieldPosition = 0.0f-(fieldSize * GameModel.GetInstance().BoardSize / 2);
         return new Vector3(startFieldPosition + x*fieldSize, startFieldPosition + y*fieldSize, (isChecker ? -0.1f : 0.0f));
     }
@@ -47,21 +49,21 @@ public class GameView : MonoBehaviour {
         {
             for(int x=0;x<GameModel.GetInstance().BoardSize;x++)
             {
-                SpriteRenderer newField = (Instantiate(FieldPrefab, GetFieldPosition(x, y,false), Quaternion.identity) as GameObject).GetComponent<SpriteRenderer>();
+                MeshRenderer newField = (Instantiate(FieldPrefab, GetFieldPosition(x, y,false), initialRotation) as GameObject).GetComponent<MeshRenderer>();
                 newField.GetComponent<FieldData>().X = x;
                 newField.GetComponent<FieldData>().Y = y;
                 if((x%2==0 && y%2==0) || (x % 2 == 1 && y % 2 == 1))
                 {
-                    newField.color = Color.grey;
+                    newField.material.color = Color.grey;
                     if(y<GameModel.GetInstance().NumCheckersRows)
                     {
-                        GameObject checker = Instantiate(CheckerPrefab, GetFieldPosition(x, y, true),Quaternion.Euler(90.0f,0.0f,0.0f)) as GameObject;
+                        GameObject checker = Instantiate(CheckerPrefab, GetFieldPosition(x, y, true), initialRotation) as GameObject;
                         checker.GetComponent<MeshRenderer>().material.color = Player1Color;
                         GameModel.GetInstance().RegiesterCheckerData(checker.GetComponent<CheckerData>(), new Vec2(x, y));
                     }
                     else if(y>=GameModel.GetInstance().BoardSize-GameModel.GetInstance().NumCheckersRows)
                     {
-                        GameObject checker = Instantiate(CheckerPrefab, GetFieldPosition(x, y, true), Quaternion.Euler(90.0f, 0.0f, 0.0f)) as GameObject;
+                        GameObject checker = Instantiate(CheckerPrefab, GetFieldPosition(x, y, true), initialRotation) as GameObject;
                         checker.GetComponent<MeshRenderer>().material.color = Player2Color;
                         GameModel.GetInstance().RegiesterCheckerData(checker.GetComponent<CheckerData>(), new Vec2(x, y));
                     }
@@ -115,6 +117,7 @@ public class GameView : MonoBehaviour {
 
     public void Promote(CheckerData checker)
     {
+        checker.transform.localScale = new Vector3(checker.transform.localScale.x,3 * checker.transform.localScale.y,checker.transform.localScale.z);
         checker.GetComponent<MeshRenderer>().material.color = (checker.Owner == GameController.GetInstance().Players[0] ? Player1KingColor : Player2KingColor);
     }
 
