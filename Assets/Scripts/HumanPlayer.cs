@@ -4,7 +4,6 @@ using System;
 
 public class HumanPlayer : Player {
 
-
     enum PlayerState
     {
         SelectingChecker,

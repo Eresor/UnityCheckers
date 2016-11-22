@@ -38,7 +38,7 @@ public class AiPlayer : Player {
     // Use this for initialization
     void Start () {
 
-        Algorithm = new AlfaBeta();
+        Algorithm = new MinMax();
 
 	}
 	

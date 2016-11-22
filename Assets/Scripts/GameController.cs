@@ -76,6 +76,10 @@ public class GameController : MonoBehaviour {
     public void NextTurn()
     {
         CurrentPlayerIdx = 1 - CurrentPlayerIdx;
+        if(CurrentPlayer is HumanPlayer)
+        {
+            GameView.GetInstance().SetCameraToPlayer(CurrentPlayerIdx);
+        }
         GameModel.GetInstance().UpdatePossibleMoves();
 
         int winner = GameModel.GetInstance().CheckVictory();

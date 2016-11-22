@@ -18,7 +18,7 @@ public class GameEndView : MonoBehaviour {
 
     public void SetWinnerText(int winner)
     {
-        GameEndText.text = "Game ended, Player " + winner + " won.";
+        GameEndText.text = "Game ended, Player " + (winner+1).ToString() + " won.";
     }
 
     public void Restart()

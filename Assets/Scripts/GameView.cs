@@ -14,11 +14,17 @@ public class GameView : MonoBehaviour {
 
     private static GameView instance;
 
+    private IEnumerator moveCameraCoroutineObject;
+
     public GameObject FieldPrefab;
 
     public GameObject CheckerPrefab;
 
     public GameObject GameEndUI;
+
+    public Transform Player1CameraPosition;
+
+    public Transform Player2CameraPosition;
 
     public Color Player1Color = Color.white;
 
@@ -85,6 +91,30 @@ public class GameView : MonoBehaviour {
         }
     }
 
+    public void SetCameraToPlayer(int playerIdx)
+    {
+        if (moveCameraCoroutineObject != null)
+            StopCoroutine(moveCameraCoroutineObject);
+        moveCameraCoroutineObject = CameraCoroutine(playerIdx);
+        StartCoroutine(moveCameraCoroutineObject);
+    }
+
+    private IEnumerator CameraCoroutine(int playerIdx)
+    {
+        Transform camTransform = Camera.main.transform;
+        Transform destTransform = (playerIdx == 0 ? Player1CameraPosition : Player2CameraPosition);
+        Quaternion rotationDir = Quaternion.Slerp(camTransform.rotation, destTransform.rotation, Time.deltaTime * 0.9f);
+
+        float speed = 0.2f;
+        for (float t = 0f; t < 1f; t += speed * Time.deltaTime)
+        {
+            camTransform.position = Vector3.Lerp(camTransform.position, destTransform.position, t);
+            transform.rotation = Quaternion.Lerp(camTransform.rotation, destTransform.rotation, t);
+            yield return null;
+        }
+        yield return null;
+    }
+
 	// Update is called once per frame
 	void Update () {
 	
@@ -104,10 +134,12 @@ public class GameView : MonoBehaviour {
     private IEnumerator MoveAnimation(CheckerData checker, Vec2 target)
     {
         Vector3 targetPos = GetFieldPosition(target.x, target.y, true);
-        while (Vector3.Distance(checker.transform.position, targetPos) > 0.1f)
+
+        float speed = 0.5f;
+        for (float t = 0f; t < 1f && Vector3.Distance(checker.transform.position,targetPos)>0.1f; t += speed * Time.deltaTime)
         {
-            checker.transform.position = Vector3.Lerp(checker.transform.position, targetPos, 0.5f);
-            yield return new WaitForSeconds(0.03f);
+            checker.transform.position = Vector3.Lerp(checker.transform.position, targetPos, t);
+            yield return null;
         }
 
         checker.transform.position = targetPos;

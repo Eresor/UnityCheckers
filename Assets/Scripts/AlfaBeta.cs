@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class AlfaBeta : AiAlgorithm
 {
-    private int MaxDepth = 4;
+    private int MaxDepth = 6;
     public override Move Run(CheckerData[,] board, int boardSize, int playerIdx)
     {
         bool[,] copy = GameModel.CopyIsKingProperty(board);

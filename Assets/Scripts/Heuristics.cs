@@ -7,8 +7,6 @@ namespace Assets.Scripts
 {
     public class Heuristics
     {
-        static float MinGrade;
-        static float MaxGrade;
 
         public static float SimpleGrade(CheckerData[,] board, int size, Player currentPlayer)
         {
