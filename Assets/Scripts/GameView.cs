@@ -30,6 +30,8 @@ public class GameView : MonoBehaviour {
 
     public Color HighlightColor = Color.blue;
 
+    public bool FinishedAnimation { get; private set; }
+
     private Vector3 GetFieldPosition(int x, int y, bool isChecker)
     {
         SpriteRenderer renderer = FieldPrefab.GetComponent<SpriteRenderer>();
@@ -40,7 +42,8 @@ public class GameView : MonoBehaviour {
 
 	// Use this for initialization
 	public void Init() {
-        for(int y=0;y<GameModel.GetInstance().BoardSize;y++)
+        FinishedAnimation = true;
+        for (int y=0;y<GameModel.GetInstance().BoardSize;y++)
         {
             for(int x=0;x<GameModel.GetInstance().BoardSize;x++)
             {
@@ -92,7 +95,22 @@ public class GameView : MonoBehaviour {
 
     public void MoveChecker(CheckerData checker, Vec2 target)
     {
-        checker.gameObject.transform.position = GetFieldPosition(target.x, target.y, true);
+        FinishedAnimation = false;
+        StartCoroutine(MoveAnimation(checker, target));
+    }
+
+    private IEnumerator MoveAnimation(CheckerData checker, Vec2 target)
+    {
+        Vector3 targetPos = GetFieldPosition(target.x, target.y, true);
+        while (Vector3.Distance(checker.transform.position, targetPos) > 0.1f)
+        {
+            checker.transform.position = Vector3.Lerp(checker.transform.position, targetPos, 0.5f);
+            yield return new WaitForSeconds(0.03f);
+        }
+
+        checker.transform.position = targetPos;
+        FinishedAnimation = true;
+        yield return null;
     }
 
     public void Promote(CheckerData checker)

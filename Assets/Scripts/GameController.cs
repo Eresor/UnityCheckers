@@ -66,12 +66,12 @@ public class GameController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        if(CurrentPlayer)
+        if (CurrentPlayer && GameView.GetInstance().FinishedAnimation)
         {
             CurrentPlayer.ProcessTurn();
         }
 
-	}
+    }
 
     public void NextTurn()
     {

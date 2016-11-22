@@ -6,25 +6,32 @@ public class AiPlayer : Player {
 
     public AiAlgorithm Algorithm;
 
+    private bool coroutineStarted = false;
+
     public override void ProcessTurn()
     {
-        StartCoroutine("Process");
+        if (!coroutineStarted)
+        {
+            StartCoroutine("Process");
+        }
     }
 
     private IEnumerator Process()
     {
+        coroutineStarted = true;
         //właczamy algorytm
         Move selected = Algorithm.Run(GameModel.GetInstance().Board, GameModel.GetInstance().BoardSize, GameController.GetInstance().CurrentPlayerIdx);
 
-        //wlaściwy ruch
-        while(GameModel.GetInstance().MoveChecker(selected))
+        while (GameModel.GetInstance().MoveChecker(selected))
         {
+            while (!GameView.GetInstance().FinishedAnimation)
+            {
+                yield return null;
+            }
             selected = selected.Children[0];
         }
-
-        //następna tura
         GameController.GetInstance().NextTurn();
-
+        coroutineStarted = false;
         yield return null;
     }
 
