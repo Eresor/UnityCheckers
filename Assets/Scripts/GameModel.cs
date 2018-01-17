@@ -400,7 +400,7 @@ public class GameModel : MonoBehaviour {
                             break;
                         }
 
-                        if (board[targetX, y] != null && board[targetX, y].Owner != checker.Owner)
+                        if (board[targetX, y] != null && board[targetX, y].Owner != checker.Owner && board[targetX+direction.x,y+direction.y]==null)
                         {
                             for (int behindY = y + direction.y; behindY < size && behindY >= 0; behindY += direction.y)
                             {
@@ -431,6 +431,9 @@ public class GameModel : MonoBehaviour {
 
     //ta funkcja nie waliduje poprawności ruchów
     //przed jej wywołaniem do symulacji należy skopiować właściwość IsKing (CopyIsKingProperty) oraz fragment planszy na którym porusza się pionek
+
+    //this function deoes not validate rules of move
+    //before call you should call CopyIsKingPropery and copy piece of map, on which checker is moving
     public static void MoveSimulation(Vec2 from, Vec2 to, CheckerData[,] board, System.Action<CheckerData, Vec2> moveAction = null, System.Action<CheckerData> destroyAction = null, System.Action<CheckerData> promoteAction = null)
     {
         CheckerData selected = board[from.x, from.y];
